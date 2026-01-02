@@ -18,8 +18,8 @@ class TestHTMLNode(unittest.TestCase):
         node = HTMLNode()
         self.assertEqual(node.tag, None)
         self.assertEqual(node.value, None)
-        self.assertEqual(node.children, None)
-        self.assertEqual(node.props, None)
+        self.assertEqual(node.children, [])
+        self.assertEqual(node.props, {})
 
     def test_props2html(self):
         props = (

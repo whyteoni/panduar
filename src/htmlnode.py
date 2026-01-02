@@ -4,8 +4,8 @@ class HTMLNode:
     def __init__(self, tag: Optional[str] = None, value: Optional[str] = None, children: Optional[list] = None, props: Optional[dict] = None):
         self.tag = tag
         self.value = value
-        self.children = children
-        self.props = props
+        self.children = children if children is not None else []
+        self.props = props if props is not None else {}
 
     def __eq__(self,other):
         for attr in ["tag","value","children","props"]:
@@ -13,11 +13,17 @@ class HTMLNode:
                 return False
         return True
 
-    def to_html(self):
-        raise NotImplementedError()
+    def to_html(self) -> str:
+        html = f"<{self.tag}{self.props_to_html()}>"
+        if self.value:
+            html += self.value
+        for child in self.children:
+            html += child.to_html()
+        html += f"</{self.tag}>"
+        return html
     
     def props_to_html(self):
-        if self.props is None:
+        if len(self.props) == 0:
             return ""
         
         str_props = []
@@ -27,7 +33,3 @@ class HTMLNode:
     
     def __repr__(self):
         return f"HTMLNode({self.tag}, {self.value}, {self.children}, {self.props})"
-
-
-        
-        
