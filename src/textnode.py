@@ -49,7 +49,7 @@ def text_node_to_html_node(text_node:TextNode) -> LeafNode:
                 value = None,
                 props = {
                     "alt": text_node.text,
-                    "href": text_node.url
+                    "src": text_node.url
                 }
             )
         
@@ -141,3 +141,10 @@ def text_to_textnodes(text:str) -> List[TextNode]:
     nodes = split_node_images(nodes)
     nodes = split_node_links(nodes)
     return nodes
+
+def text_to_htmlnodes(text:str) -> List[LeafNode]:
+    output = []
+    nodes = text_to_textnodes(text)
+    for node in nodes:
+        output.append(text_node_to_html_node(node))
+    return output

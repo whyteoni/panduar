@@ -9,7 +9,8 @@ from textnode import (
     extract_markdown_links,
     split_node_images,
     split_node_links,
-    text_to_textnodes
+    text_to_textnodes,
+    text_to_htmlnodes
 )
 
 class TestTextNode(unittest.TestCase):
@@ -469,6 +470,106 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(nodes[1].text_type, TextType.BOLD)
         self.assertEqual(nodes[3].text, "more bold")
         self.assertEqual(nodes[3].text_type, TextType.BOLD)
+
+    ## TEXT_TO_HTMLNODES ##
+
+    def test_text_to_htmlnodes_plain_text(self):
+        text = "This is plain text"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 1)
+        self.assertEqual(html_nodes[0].to_html(), "This is plain text")
+
+    def test_text_to_htmlnodes_bold(self):
+        text = "This is **bold** text"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 3)
+        self.assertEqual(html_nodes[0].to_html(), "This is ")
+        self.assertEqual(html_nodes[1].to_html(), "<b>bold</b>")
+        self.assertEqual(html_nodes[2].to_html(), " text")
+
+    def test_text_to_htmlnodes_italic(self):
+        text = "This is _italic_ text"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 3)
+        self.assertEqual(html_nodes[0].to_html(), "This is ")
+        self.assertEqual(html_nodes[1].to_html(), "<i>italic</i>")
+        self.assertEqual(html_nodes[2].to_html(), " text")
+
+    def test_text_to_htmlnodes_code(self):
+        text = "This is `code` text"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 3)
+        self.assertEqual(html_nodes[0].to_html(), "This is ")
+        self.assertEqual(html_nodes[1].to_html(), "<code>code</code>")
+        self.assertEqual(html_nodes[2].to_html(), " text")
+
+    def test_text_to_htmlnodes_link(self):
+        text = "This is a [link](https://example.com) text"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 3)
+        self.assertEqual(html_nodes[0].to_html(), "This is a ")
+        self.assertEqual(html_nodes[1].to_html(), '<a href="https://example.com">link</a>')
+        self.assertEqual(html_nodes[2].to_html(), " text")
+
+    def test_text_to_htmlnodes_image(self):
+        text = "This is an ![image](https://example.com/pic.jpg) text"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 3)
+        self.assertEqual(html_nodes[0].to_html(), "This is an ")
+        self.assertEqual(html_nodes[1].to_html(), '<img alt="image" src="https://example.com/pic.jpg"></img>')
+        self.assertEqual(html_nodes[2].to_html(), " text")
+
+    def test_text_to_htmlnodes_multiple_formatting(self):
+        text = "This is **bold** and _italic_ and `code`"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 6)
+        self.assertEqual(html_nodes[0].to_html(), "This is ")
+        self.assertEqual(html_nodes[1].to_html(), "<b>bold</b>")
+        self.assertEqual(html_nodes[2].to_html(), " and ")
+        self.assertEqual(html_nodes[3].to_html(), "<i>italic</i>")
+        self.assertEqual(html_nodes[4].to_html(), " and ")
+        self.assertEqual(html_nodes[5].to_html(), "<code>code</code>")
+
+    def test_text_to_htmlnodes_mixed_images_and_links(self):
+        text = "Here's a [link](https://example.com) and an ![image](pic.jpg)"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 4)
+        self.assertEqual(html_nodes[0].to_html(), "Here's a ")
+        self.assertEqual(html_nodes[1].to_html(), '<a href="https://example.com">link</a>')
+        self.assertEqual(html_nodes[2].to_html(), " and an ")
+        self.assertEqual(html_nodes[3].to_html(), '<img alt="image" src="pic.jpg"></img>')
+
+    def test_text_to_htmlnodes_empty_text(self):
+        text = ""
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 0)
+
+    def test_text_to_htmlnodes_only_formatting(self):
+        text = "**bold**"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 1)
+        self.assertEqual(html_nodes[0].to_html(), "<b>bold</b>")
+
+    def test_text_to_htmlnodes_multiple_same_formatting(self):
+        text = "This is **bold** and **more bold** text"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 5)
+        self.assertEqual(html_nodes[1].to_html(), "<b>bold</b>")
+        self.assertEqual(html_nodes[3].to_html(), "<b>more bold</b>")
+
+    def test_text_to_htmlnodes_empty_alt_image(self):
+        text = "Image with empty alt ![](image.png)"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 2)
+        self.assertEqual(html_nodes[0].to_html(), "Image with empty alt ")
+        self.assertEqual(html_nodes[1].to_html(), '<img src="image.png"></img>')
+
+    def test_text_to_htmlnodes_empty_link_text(self):
+        text = "Link with empty text [](https://example.com)"
+        html_nodes = text_to_htmlnodes(text)
+        self.assertEqual(len(html_nodes), 2)
+        self.assertEqual(html_nodes[0].to_html(), "Link with empty text ")
+        self.assertEqual(html_nodes[1].to_html(), '<a href="https://example.com"></a>')
 
 if __name__ == "__main__":
     unittest.main()

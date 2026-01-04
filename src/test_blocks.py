@@ -110,7 +110,7 @@ Second paragraph after multiple newlines."""
         self.assertEqual(result.tag, "div")
         self.assertEqual(len(result.children), 1)
         self.assertEqual(result.children[0].tag, "h1")
-        self.assertEqual(result.children[0].value, "This is a heading")
+        self.assertEqual(result.children[0].children[0].value, "This is a heading")
     
     def test_markdown_to_html_node_code(self):
         markdown = "```\nprint('hello')\n```"
@@ -128,7 +128,7 @@ Second paragraph after multiple newlines."""
         self.assertEqual(result.tag, "div")
         self.assertEqual(len(result.children), 1)
         self.assertEqual(result.children[0].tag, "blockquote")
-        self.assertEqual(result.children[0].value, "This is a quoteSecond line")
+        self.assertEqual(result.children[0].children[0].value, "This is a quote\nSecond line")
     
     def test_markdown_to_html_node_unordered_list(self):
         markdown = "* First item\n* Second item"
@@ -138,9 +138,9 @@ Second paragraph after multiple newlines."""
         self.assertEqual(result.children[0].tag, "ul")
         self.assertEqual(len(result.children[0].children), 2)
         self.assertEqual(result.children[0].children[0].tag, "li")
-        self.assertEqual(result.children[0].children[0].value, "First item")
+        self.assertEqual(result.children[0].children[0].children[0].value, "First item")
         self.assertEqual(result.children[0].children[1].tag, "li")
-        self.assertEqual(result.children[0].children[1].value, "Second item")
+        self.assertEqual(result.children[0].children[1].children[0].value, "Second item")
     
     def test_markdown_to_html_node_ordered_list(self):
         markdown = "1. First item\n2. Second item"
@@ -150,9 +150,9 @@ Second paragraph after multiple newlines."""
         self.assertEqual(result.children[0].tag, "ol")
         self.assertEqual(len(result.children[0].children), 2)
         self.assertEqual(result.children[0].children[0].tag, "li")
-        self.assertEqual(result.children[0].children[0].value, "First item")
+        self.assertEqual(result.children[0].children[0].children[0].value, "First item")
         self.assertEqual(result.children[0].children[1].tag, "li")
-        self.assertEqual(result.children[0].children[1].value, "Second item")
+        self.assertEqual(result.children[0].children[1].children[0].value, "Second item")
     
     def test_markdown_to_html_node_multiple_blocks(self):
         markdown = """# Heading

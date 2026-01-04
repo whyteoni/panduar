@@ -27,7 +27,9 @@ class HTMLNode:
             return ""
         
         str_props = []
-        for attr, value in self.props.items():
+        for attr, value in sorted(self.props.items()):
+            if value == "":
+                continue
             str_props.append(f"{attr}=\"{value}\"")
         return " " + " ".join(str_props)
     

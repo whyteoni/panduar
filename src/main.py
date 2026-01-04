@@ -1,9 +1,12 @@
 import os
 import shutil
+from htmlpage import generate_page
 
-SCRIPT_DIR = os.path.dirname(__file__)
-STATIC_DIR = os.path.abspath(SCRIPT_DIR + "/../static")
-PUBLIC_DIR = os.path.abspath(SCRIPT_DIR + "/../public")
+BASE_DIR = os.path.dirname(__file__)
+CONTENT_DIR = os.path.abspath(BASE_DIR + "/../content")
+PUBLIC_DIR = os.path.abspath(BASE_DIR + "/../public")
+STATIC_DIR = os.path.abspath(BASE_DIR + "/../static")
+TEMPLATE_PATH = os.path.abspath(BASE_DIR + "/../template/template.html")
 
 def copy_static_assets(source:str, dest:str) -> None:
     for file in os.listdir(source):
@@ -11,16 +14,35 @@ def copy_static_assets(source:str, dest:str) -> None:
         full_dest_path = os.path.join(dest, file)
         if os.path.isfile(full_src_path):
             shutil.copy(full_src_path, full_dest_path)
-            print(f"COPY: {full_src_path} -> {full_dest_path}")
+            # print(f"COPY: {full_src_path} -> {full_dest_path}")
         else:
             os.mkdir(full_dest_path)
-            print(f"MAKE: {full_dest_path}")
+            # print(f"MAKE: {full_dest_path}")
             copy_static_assets(full_src_path,full_dest_path)
 
-def main():
-    shutil.rmtree(PUBLIC_DIR)
-    copy_static_assets(STATIC_DIR, PUBLIC_DIR)
+def generate_site(from_path:str, template_path:str, dest_path:str) -> None:
+    common_path_len = len(os.path.commonpath([from_path,template_path,dest_path])) + 1
+    for file in os.listdir(from_path):
+        full_src_path = os.path.join(from_path, file)
 
+        if os.path.isfile(full_src_path) and file[-3:] == ".md":
+            full_dest_path = os.path.join(dest_path, file[:-2] + "html")
+            generate_page(full_src_path, template_path, full_dest_path)
+
+        elif os.path.isdir(full_src_path):
+            full_dest_path = os.path.join(dest_path, file)
+            os.mkdir(full_dest_path)
+            generate_site(full_src_path, template_path, full_dest_path)
+
+        else:
+            print(f"unprocessable file: {full_src_path[common_path_len:]}")
+
+def main():
+    if os.path.exists(PUBLIC_DIR):
+        shutil.rmtree(PUBLIC_DIR)
+    os.mkdir(PUBLIC_DIR)
+    copy_static_assets(STATIC_DIR, PUBLIC_DIR)
+    generate_site(CONTENT_DIR, TEMPLATE_PATH, PUBLIC_DIR)
 
 if __name__ == "__main__":
     main()

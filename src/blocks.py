@@ -3,7 +3,7 @@ import re
 from enum import Enum
 from typing import List, Optional
 from htmlnode import HTMLNode
-from textnode import TextNode, text_to_textnodes, text_node_to_html_node
+from textnode import TextNode, text_to_htmlnodes
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -62,7 +62,7 @@ def markdown_to_html_node(markdown:str) -> HTMLNode:
         match block_type:
             case BlockType.PARAGRAPH:
                 block_node.tag = "p"
-                block_node.children = paragraph_block_to_html_nodes(block)
+                block_node.children = text_to_htmlnodes(block)
             case BlockType.CODE:
                 block_node.tag = "pre"
                 code_node = HTMLNode("code")
@@ -72,9 +72,10 @@ def markdown_to_html_node(markdown:str) -> HTMLNode:
                 block_node = heading_block_to_html_node(block)
             case BlockType.QUOTE:
                 block_node.tag = "blockquote"
-                block_node.value = ""
+                lines = []
                 for line in block.splitlines():
-                    block_node.value += line[2:].strip()
+                    lines.append(line[2:].strip())
+                block_node.children = text_to_htmlnodes("\n".join(lines))
             case BlockType.ORDERED_LIST:
                 block_node.tag = "ol"
                 block_node.children = list_block_to_html_nodes(block)
@@ -86,14 +87,6 @@ def markdown_to_html_node(markdown:str) -> HTMLNode:
         base.children.append(block_node)
     return base
 
-
-def paragraph_block_to_html_nodes(block:str) -> List[HTMLNode]:
-    html_nodes = []
-    text_nodes = text_to_textnodes(block)
-    for node in text_nodes:
-        html_nodes.append(text_node_to_html_node(node))
-    return html_nodes
-
 def heading_block_to_html_node(block:str) -> HTMLNode:
     node = HTMLNode()
     level = 0
@@ -101,7 +94,7 @@ def heading_block_to_html_node(block:str) -> HTMLNode:
         level += 1
         block = block[1:]
     node.tag = f"h{level}"
-    node.value = block.strip()
+    node.children = text_to_htmlnodes(block.strip())
     return node
 
 def list_block_to_html_nodes(block:str) -> List[HTMLNode]:
@@ -109,7 +102,7 @@ def list_block_to_html_nodes(block:str) -> List[HTMLNode]:
     for item in block.splitlines():
         list_item = HTMLNode(
             tag = "li",
-            value = item.split(" ", maxsplit=1)[1]
+            children = text_to_htmlnodes(item.split(" ", maxsplit=1)[1])
         )
         nodes.append(list_item)
     return nodes
